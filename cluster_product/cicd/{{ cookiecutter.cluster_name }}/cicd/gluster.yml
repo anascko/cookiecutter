@@ -1,0 +1,12 @@
+classes:
+  # GlusterFSVolumes
+  - system.glusterfs.server.cluster
+  - system.glusterfs.server.volume.aptly
+  - system.glusterfs.server.volume.gerrit
+  - system.glusterfs.server.volume.jenkins
+  - system.glusterfs.server.volume.mysql
+  - system.glusterfs.server.volume.openldap
+  - system.glusterfs.server.volume.registry
+  {%- if cookiecutter.stacklight_enabled == 'True' and cookiecutter.stacklight_version == '2' %}
+  - system.glusterfs.server.volume.prometheus
+  {%- endif %}

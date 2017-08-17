@@ -1,0 +1,53 @@
+{
+    "cluster_name"                               : "deployment_name",
+    "deployment_type"                            : "virtual",
+
+    "kubernetes_keepalived_vip_interface"        : "ens4",
+
+    "kubernetes_control_address"                 : "10.167.4.10",
+    "kubernetes_control_node01_address"          : "10.167.4.11",
+    "kubernetes_control_node02_address"          : "10.167.4.12",
+    "kubernetes_control_node03_address"          : "10.167.4.13",
+    "kubernetes_control_node01_deploy_address"   : "10.167.5.11",
+    "kubernetes_control_node02_deploy_address"   : "10.167.5.12",
+    "kubernetes_control_node03_deploy_address"   : "10.167.5.13",
+
+    "kubernetes_compute_node01_tenant_address"   : "172.16.11.105",
+    "kubernetes_compute_node02_tenant_address"   : "172.16.11.106",
+    "kubernetes_control_node01_tenant_address"   : "172.16.11.107",
+    "kubernetes_control_node02_tenant_address"   : "172.16.11.108",
+    "kubernetes_control_node03_tenant_address"   : "172.16.11.109",
+
+    "kubernetes_compute_node01_single_address"   : "10.167.2.101",
+    "kubernetes_compute_node02_single_address"   : "10.167.2.102",
+    "kubernetes_compute_node01_deploy_address"   : "10.167.5.101",
+    "kubernetes_compute_node02_deploy_address"   : "10.167.5.102",
+
+    "kubernetes_compute_node01_address"         : "172.17.10.105",
+    "kubernetes_compute_node01_hostname"        : "cmp01",
+    "kubernetes_compute_node02_address"         : "172.17.10.106",
+    "kubernetes_compute_node02_hostname"        : "cmp02",
+    "kubernetes_control_node01_address"         : "172.16.10.107",
+    "kubernetes_control_node01_hostname"        : "ctl01",
+    "kubernetes_control_node02_address"         : "172.16.10.108",
+    "kubernetes_control_node02_hostname"        : "ctl02",
+    "kubernetes_control_node03_address"         : "172.16.10.109",
+    "kubernetes_control_node03_hostname"        : "ctl03",
+
+
+    "calico_network"                             : "192.168.0.0",
+    "calico_netmask"                             : "16",
+    "calico_enable_nat"                          : "true",
+    "calico_no_default_pools"                    : "false",
+
+    "hyperkube_image"                            : "artifactory.mirantis.com/docker-prod-local/mirantis/kubernetes/hyperkube-amd64:v1.6.2-2",
+    "calico_cni_image"                           : "artifactory.mirantis.com/docker-prod-local/mirantis/projectcalico/calico/cni:latest",
+    "calico_image"                               : "artifactory.mirantis.com/docker-prod-local/mirantis/projectcalico/calico/node:latest",
+    "calicoctl_image"                            : "artifactory.mirantis.com/docker-prod-local/mirantis/projectcalico/calico/ctl:latest",
+    "etcd_ssl"                                   : "true",
+    "kubernetes_network_engine"                  : "calico",
+    "opencontrail_public_ip_range"               : "172.16.0.0/24",
+    "opencontrail_private_ip_range"              : "10.150.0.0/16",
+    "stacklight_enabled"                         : "true",
+    "stacklight_version"                         : "1"
+}

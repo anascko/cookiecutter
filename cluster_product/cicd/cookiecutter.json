@@ -1,0 +1,24 @@
+{
+    "cluster_name"                              : "deployment_name",
+    "cicd_control_vip_address"                  : "10.167.4.90",
+    "cicd_control_node01_address"               : "10.167.4.91",
+    "cicd_control_node02_address"               : "10.167.4.92",
+    "cicd_control_node03_address"               : "10.167.4.93",
+
+    "cicd_control_vip_hostname"                 : "cid",
+    "cicd_control_node01_hostname"              : "cid01",
+    "cicd_control_node02_hostname"              : "cid02",
+    "cicd_control_node03_hostname"              : "cid03",
+
+
+    "salt_api_password"                         : "<<WILL_BE_GENERATED>>",
+    "cicd_private_key"                          : "<<WILL_BE_GENERATED>>",
+    "cicd_public_key"                           : "<<WILL_BE_GENERATED>>",
+
+    "openldap_enabled"                          : "True",
+    "openldap_organisation"                     : "${_param:cluster_name}",
+    "openldap_domain"                           : "deployment-name.local",
+
+    "stacklight_enabled"                        : "False",
+    "stacklight_version"                        : "1"
+}

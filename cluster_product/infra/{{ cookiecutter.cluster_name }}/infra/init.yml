@@ -1,0 +1,160 @@
+{%- macro password(size=16) -%}
+{% for index in range(size) %}{{ 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'|random }}{% endfor %}
+{%- endmacro %}
+classes:
+- system.linux.system.single
+- system.openssh.server.team.lab
+- system.openssh.server.team.tcpcloud
+- system.openssh.server.team.mcp_qa
+- system.openssh.server.team.l1_support
+- system.openssh.server.team.l2_support
+- system.rsyslog.client.single
+{%- if cookiecutter.kubernetes_enabled == 'True' %}
+- cluster.{{ cookiecutter.cluster_name }}.kubernetes
+{%- endif %}
+{%- if cookiecutter.openstack_enabled == 'True' %}
+- cluster.{{ cookiecutter.cluster_name }}.openstack
+{%- endif %}
+{%- if cookiecutter.opencontrail_enabled == 'True' %}
+- cluster.{{ cookiecutter.cluster_name }}.opencontrail
+{%- endif %}
+{%- if cookiecutter.stacklight_enabled == 'True' %}
+- cluster.{{ cookiecutter.cluster_name }}.stacklight
+{%- if cookiecutter.stacklight_version == '1' %}
+- cluster.{{ cookiecutter.cluster_name }}.stacklight.client
+{%- endif %}
+{%- if cookiecutter.stacklight_version == '2' %}
+- system.heka.log_collector.single
+- system.heka.log_collector.output.telegraf
+- system.telegraf.agent
+- system.prometheus.collector
+- service.grafana.collector
+{%- endif %}
+{%- endif %}
+{%- if cookiecutter.cicd_enabled == 'True' %}
+- cluster.{{ cookiecutter.cluster_name }}.cicd
+{%- endif %}
+parameters:
+  _param:
+    {%- if cookiecutter.kubernetes_enabled != 'True' %}
+    salt_control_trusty_image: http://apt-mk.mirantis.com/images/ubuntu-14-04-x64-mcp1.1.qcow2
+    salt_control_xenial_image: http://apt-mk.mirantis.com/images/ubuntu-16-04-x64-mcp1.1.qcow2
+    {%- endif %}
+
+
+    {%- if cookiecutter.get('local_repositories', 'False') == 'True' %}
+    local_repo_url: {{ cookiecutter.local_repo_url}}
+    linux_repo_refresh_db: true
+    {%- endif %}
+    infra_config_hostname: {{ cookiecutter.salt_master_hostname }}
+    salt_minion_ca_host: ${_param:infra_config_hostname}.${_param:cluster_domain}
+    # infra service addresses
+    infra_config_address: {{ cookiecutter.salt_master_address }}
+    infra_config_deploy_address: {{ cookiecutter.salt_master_management_address }}
+
+    cluster_domain: {{ cookiecutter.cluster_domain }}
+    cluster_name: {{ cookiecutter.cluster_name }}
+    cluster_public_host: {{ cookiecutter.public_host }}
+
+    {%- if cookiecutter.openstack_enabled == 'True' or cookiecutter.opencontrail_enabled == 'True' %}
+    control_network_netmask: {{ cookiecutter.control_network_netmask }}
+    tenant_network_netmask: {{ cookiecutter.tenant_network_netmask }}
+
+    dns_server01: {{ cookiecutter.dns_server01 }}
+    dns_server02: {{ cookiecutter.dns_server02 }}
+    {%- endif %}
+
+    {%- if cookiecutter.opencontrail_enabled == 'True' %}
+    tenant_network_gateway: {{ cookiecutter.tenant_network_gateway }}
+    {%- endif %}
+
+    {%- if cookiecutter.deployment_type == 'physical' %}
+    control_vlan: {{ cookiecutter.control_vlan }}
+    tenant_vlan: {{ cookiecutter.tenant_vlan }}
+
+    deploy_network_netmask: {{ cookiecutter.deploy_network_netmask }}
+    deploy_network_gateway: {{ cookiecutter.deploy_network_gateway }}
+    {%- endif %}
+
+    {%- if cookiecutter.kubernetes_enabled != 'True' %}
+
+    # MaaS parameters
+    infra_maas_node01_deploy_address: {{ cookiecutter.maas_deploy_address }}
+    infra_maas_node01_hostname: {{ cookiecutter.maas_hostname }}
+    maas_admin_username: mirantis
+    maas_admin_password: {{ password(16) }}
+    maas_db_password: REPLACE_BY_GENERATED_VALUE_DURING_INSTALL
+
+    infra_kvm_address: {{ cookiecutter.infra_kvm_vip_address }}
+    infra_kvm_node01_address: {{ cookiecutter.infra_kvm01_control_address }}
+    infra_kvm_node02_address: {{ cookiecutter.infra_kvm02_control_address }}
+    infra_kvm_node03_address: {{ cookiecutter.infra_kvm03_control_address }}
+    infra_kvm_node01_deploy_address: {{ cookiecutter.infra_kvm01_deploy_address }}
+    infra_kvm_node02_deploy_address: {{ cookiecutter.infra_kvm02_deploy_address }}
+    infra_kvm_node03_deploy_address: {{ cookiecutter.infra_kvm03_deploy_address }}
+    infra_kvm_node01_hostname: {{ cookiecutter.infra_kvm01_hostname }}
+    infra_kvm_node02_hostname: {{ cookiecutter.infra_kvm02_hostname }}
+    infra_kvm_node03_hostname: {{ cookiecutter.infra_kvm03_hostname }}
+
+    glusterfs_node01_address: ${_param:infra_kvm_node01_address}
+    glusterfs_node02_address: ${_param:infra_kvm_node02_address}
+    glusterfs_node03_address: ${_param:infra_kvm_node03_address}
+
+    linux_dhcp_interface:
+      enabled: true
+      type: eth
+      proto: dhcp
+    linux_single_interface:
+      enabled: true
+      type: eth
+      proto: static
+      address: ${_param:single_address}
+      netmask: ${_param:control_network_netmask}
+      name_servers:
+        - ${_param:dns_server01}
+        - ${_param:dns_server02}
+    {%- endif %}
+
+
+  salt:
+    minion:
+      trusted_ca_minions:
+        - ${_param:salt_minion_ca_host}
+
+  linux:
+    network:
+      host:
+        cfg01:
+          address: ${_param:infra_config_address}
+          names:
+          - ${_param:infra_config_hostname}
+          - ${_param:infra_config_hostname}.${_param:cluster_domain}
+        cfg:
+          address: ${_param:infra_config_address}
+          names:
+          - cfg
+          - cfg.${_param:cluster_domain}
+
+        {%- if not cookiecutter.kubernetes_enabled == 'True' %}
+        kvm01:
+          address: ${_param:infra_kvm_node01_address}
+          names:
+          - ${_param:infra_kvm_node01_hostname}
+          - ${_param:infra_kvm_node01_hostname}.${_param:cluster_domain}
+        kvm02:
+          address: ${_param:infra_kvm_node02_address}
+          names:
+          - ${_param:infra_kvm_node02_hostname}
+          - ${_param:infra_kvm_node02_hostname}.${_param:cluster_domain}
+        kvm03:
+          address: ${_param:infra_kvm_node03_address}
+          names:
+          - ${_param:infra_kvm_node03_hostname}
+          - ${_param:infra_kvm_node03_hostname}.${_param:cluster_domain}
+        {%- endif %}
+    system:
+      name: ${_param:infra_config_hostname}
+      domain: ${_param:cluster_domain}
+      service:
+        apt-daily.timer:
+          status: dead

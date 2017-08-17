@@ -1,0 +1,85 @@
+classes:
+{%- if cookiecutter.get('local_repositories', 'False') == 'True' %}
+- system.linux.system.repo_local.ubuntu
+- system.linux.system.repo_local.mcp.extra
+- system.linux.system.repo_local.mcp.openstack
+- system.linux.system.repo_local.saltstack.xenial
+- system.linux.system.repo_local.glusterfs
+{%- if cookiecutter.stacklight_enabled == 'True' and cookiecutter.stacklight_version == '1' %}
+- system.linux.system.repo_local.sensu
+{%- endif %}
+{%- if cookiecutter.openstack_network_engine == 'opencontrail' %}
+- system.linux.system.repo_local.mcp.contrail
+{%- endif %}
+{%- else %}
+- system.linux.system.repo.ubuntu
+- system.linux.system.repo.mcp.extra
+- system.linux.system.repo.mcp.openstack
+- system.linux.system.repo.saltstack.xenial
+- system.linux.system.repo.glusterfs
+{%- if cookiecutter.stacklight_enabled == 'True' and cookiecutter.stacklight_version == '1' %}
+- system.linux.system.repo.sensu
+{%- endif %}
+{%- if cookiecutter.openstack_network_engine == 'opencontrail' %}
+- system.linux.system.repo.mcp.contrail
+{%- endif %}
+{%- endif %}
+- system.memcached.server.single
+{%- if cookiecutter.openstack_network_engine == 'opencontrail' %}
+- system.neutron.control.opencontrail.cluster
+- system.opencontrail.client.cluster
+- system.heat.server.resource.contrail
+{%- endif %}
+{%- if cookiecutter.openstack_network_engine == 'ovs' %}
+- system.neutron.control.openvswitch.cluster
+{%- if cookiecutter.ironic_enabled == 'True' %}
+- system.heka.alarm.openstack_control
+- system.haproxy.proxy.listen.openstack.ironic
+- service.ironic.client
+- system.ironic.api.cluster
+{%- endif %}
+{%- if cookiecutter.get('openstack_nfv_sriov_enabled', 'False') == 'True' %}
+- system.neutron.control.openvswitch.sriov
+{%- endif %}
+{%- endif %}
+- system.keystone.server.cluster
+- system.keystone.server.wsgi
+- system.keystone.server.notification.messagingv2
+- system.glance.control.cluster
+- system.glance.control.notification.messagingv2
+- system.nova.control.cluster
+- system.nova.control.notification.messagingv2
+- system.cinder.control.cluster
+- system.cinder.control.notification.messagingv2
+- system.cinder.volume.single
+- system.cinder.volume.notification.messagingv2
+- system.heat.server.cluster
+- system.heat.server.notification.messagingv2
+- system.haproxy.proxy.listen.openstack.nova-placement
+- system.haproxy.proxy.listen.openstack.glare
+- system.glusterfs.client.cluster
+- system.glusterfs.client.volume.glance
+- system.glusterfs.client.volume.keystone
+- cluster.{{ cookiecutter.cluster_name }}.infra
+parameters:
+  _param:
+{%- if cookiecutter.ironic_enabled == 'True' %}
+    keepalived_vip_interface: ens4
+    keepalived_openstack_telemetry_vip_interface: ens4
+{%- else %}
+    keepalived_vip_interface: ens3
+    keepalived_vip_virtual_router_id: 50
+{%- endif %}
+    cluster_vip_address: ${_param:openstack_control_address}
+    cluster_local_address: ${_param:single_address}
+    cluster_node01_hostname: ${_param:openstack_control_node01_hostname}
+    cluster_node01_address: ${_param:openstack_control_node01_address}
+    cluster_node02_hostname: ${_param:openstack_control_node02_hostname}
+    cluster_node02_address: ${_param:openstack_control_node02_address}
+    cluster_node03_hostname: ${_param:openstack_control_node03_hostname}
+    cluster_node03_address: ${_param:openstack_control_node03_address}
+    nova_vncproxy_url: https://${_param:cluster_public_host}:6080
+  linux:
+    network:
+      interface:
+        ens3: ${_param:linux_single_interface}

@@ -1,0 +1,269 @@
+classes:
+{%- if cookiecutter.get('local_repositories', 'False') == 'True' %}
+- system.linux.system.repo_local.mcp.salt
+- system.linux.system.repo_local.mcp.extra
+- system.linux.system.repo_local.ubuntu
+- system.linux.system.repo_local.glusterfs
+{%- if cookiecutter.stacklight_enabled == 'True' and cookiecutter.stacklight_version == '1' %}
+- system.linux.system.repo_local.sensu
+{%- endif %}
+{%- else %}
+- system.linux.system.repo.mcp.salt
+- system.linux.system.repo.mcp.extra
+{%- if cookiecutter.openstack_enabled == 'True' %}
+- system.linux.system.repo.mcp.openstack
+{%- endif %}
+- system.linux.system.repo.ubuntu
+- system.linux.system.repo.glusterfs
+{%- if cookiecutter.stacklight_enabled == 'True' and cookiecutter.stacklight_version == '1' %}
+- system.linux.system.repo.sensu
+{%- endif %}
+{%- endif %}
+- system.openssh.client.lab
+{%- if cookiecutter.openstack_enabled == 'True' %}
+- system.glusterfs.client.cluster
+- system.glusterfs.client.volume.salt_pki
+{%- endif %}
+- system.salt.master.pkg
+- system.salt.minion.ca.salt_master
+- system.salt.master.api
+- system.reclass.storage.salt
+- system.xtrabackup.server.single
+{%- if cookiecutter.openstack_enabled == 'True' and cookiecutter.openstack_network_engine == 'opencontrail' %}
+- system.cassandra.backup.server.single
+- system.zookeeper.backup.server.single
+{%- endif %}
+{%- if cookiecutter.kubernetes_enabled != 'True' %}
+- system.reclass.storage.system.physical_control_cluster
+- system.reclass.storage.system.infra_maas_single
+{%- endif %}
+{%- if cookiecutter.openstack_enabled == 'True' and cookiecutter.openstack_network_engine == 'opencontrail' %}
+- system.reclass.storage.system.opencontrail_analytics_cluster
+- system.reclass.storage.system.opencontrail_control_cluster
+{%- endif %}
+{%- if cookiecutter.openstack_enabled == 'True' and cookiecutter.openstack_network_engine == 'ovs' %}
+- system.reclass.storage.system.openstack_gateway_cluster
+{%- endif %}
+{%- if cookiecutter.openstack_enabled == 'True' %}
+- system.reclass.storage.system.openstack_control_cluster
+- system.reclass.storage.system.openstack_proxy_cluster
+- system.reclass.storage.system.openstack_database_cluster
+- system.reclass.storage.system.openstack_message_queue_cluster
+- system.reclass.storage.system.openstack_telemetry_cluster
+- system.reclass.storage.system.openstack_benchmark_single
+{%- endif %}
+{%- if cookiecutter.stacklight_enabled == 'True' %}
+- system.linux.system.repo.mcp.extra
+- system.reclass.storage.system.stacklight_log_cluster
+- system.reclass.storage.system.stacklight_telemetry_cluster
+{%- if cookiecutter.stacklight_version == '1' %}
+- system.reclass.storage.system.stacklight_monitor_cluster
+{%- endif %}
+{%- endif %}
+{%- if cookiecutter.cicd_enabled == 'True' %}
+- system.reclass.storage.system.cicd_control_cluster
+{%- endif %}
+{%- if cookiecutter.kubernetes_enabled == 'True' %}
+- system.salt.minion.cert.k8s_server
+- system.reclass.storage.system.kubernetes_control_cluster
+{%- endif %}
+- cluster.{{ cookiecutter.cluster_name }}.infra
+parameters:
+  _param:
+    salt_master_base_environment: prd
+    reclass_data_repository: "{{ cookiecutter.reclass_repository }}"
+    reclass_data_revision: master
+    reclass_config_master: ${_param:infra_config_deploy_address}
+    single_address: ${_param:infra_config_address}
+    deploy_address: ${_param:infra_config_deploy_address}
+    linux_system_codename: xenial
+    salt_api_password_hash: "{{ cookiecutter.salt_api_password_hash }}"
+    salt_master_host: ${_param:infra_config_address}
+  reclass:
+    storage:
+      node:
+        {%- if cookiecutter.kubernetes_enabled != 'True' %}
+        infra_kvm_node01:
+          params:
+            keepalived_vip_priority: 100
+            linux_system_codename: xenial
+        infra_kvm_node02:
+          params:
+            keepalived_vip_priority: 101
+            linux_system_codename: xenial
+        infra_kvm_node03:
+          params:
+            keepalived_vip_priority: 102
+            linux_system_codename: xenial
+        {%- endif %}
+        {%- if cookiecutter.kubernetes_enabled == 'True' %}
+        {%- if cookiecutter.kubernetes_network_engine == 'opencontrail' %}
+        kubernetes_control_node01:
+          params:
+            tenant_address: ${_param:kubernetes_control_node01_tenant_address}
+        kubernetes_control_node02:
+          params:
+            tenant_address: ${_param:kubernetes_control_node02_tenant_address}
+        kubernetes_control_node03:
+          params:
+            tenant_address: ${_param:kubernetes_control_node03_tenant_address}
+        {%- endif %}
+        kubernetes_compute_node01:
+          name: ${_param:kubernetes_compute_node01_hostname}
+          domain: ${_param:cluster_domain}
+          classes:
+          - cluster.${_param:cluster_name}.kubernetes.compute
+          params:
+            salt_master_host: ${_param:infra_config_address}
+            linux_system_codename: xenial
+            single_address: ${_param:kubernetes_compute_node01_address}
+            {%- if cookiecutter.kubernetes_network_engine == 'opencontrail' %}
+            tenant_address: ${_param:kubernetes_compute_node01_tenant_address}
+            {%- endif %}
+        kubernetes_compute_node02:
+          name: ${_param:kubernetes_compute_node02_hostname}
+          domain: ${_param:cluster_domain}
+          classes:
+          - cluster.${_param:cluster_name}.kubernetes.compute
+          params:
+            salt_master_host: ${_param:infra_config_address}
+            linux_system_codename: xenial
+            single_address: ${_param:kubernetes_compute_node02_address}
+            {%- if cookiecutter.kubernetes_network_engine == 'opencontrail' %}
+            tenant_address: ${_param:kubernetes_compute_node02_tenant_address}
+            {%- endif %}
+        {%- endif %}
+        {%- if cookiecutter.stacklight_enabled == 'True' and cookiecutter.stacklight_version == '1' %}
+        stacklight_log_node01:
+          classes:
+          - system.elasticsearch.client.single
+        stacklight_monitor_node01:
+          classes:
+          - system.grafana.client.single
+          - system.kibana.client.single
+        {%- endif %}
+        {%- if cookiecutter.stacklight_enabled == 'True' and cookiecutter.stacklight_version == '2' and cookiecutter.kubernetes_enabled == 'True' %}
+        stacklight_telemetry_node01:
+          classes:
+          - service.galera.master.cluster
+          params:
+            mysql_cluster_role: master
+        stacklight_telemetry_node02:
+          classes:
+          - service.galera.slave.cluster
+          params:
+            mysql_cluster_role: slave
+        stacklight_telemetry_node03:
+          classes:
+          - service.galera.slave.cluster
+          params:
+            mysql_cluster_role: slave
+        {%- endif %}
+        {%- if cookiecutter.openstack_enabled == 'True' and cookiecutter.openstack_network_engine == 'opencontrail' %}
+        opencontrail_control_node01:
+          classes:
+          - cluster.${_param:cluster_name}.opencontrail.control_init
+        {%- endif %}
+        {%- if cookiecutter.openstack_enabled == 'True' %}
+        openstack_control_node01:
+          params:
+            linux_system_codename: xenial
+          classes:
+          - cluster.${_param:cluster_name}.openstack.control_init
+        openstack_control_node02:
+          params:
+            linux_system_codename: xenial
+        openstack_control_node03:
+          params:
+            linux_system_codename: xenial
+        openstack_database_node01:
+          params:
+            linux_system_codename: xenial
+          classes:
+          - cluster.${_param:cluster_name}.openstack.database_init
+        openstack_database_node02:
+          params:
+            linux_system_codename: xenial
+        openstack_database_node03:
+          params:
+            linux_system_codename: xenial
+        openstack_telemetry_node01:
+          params:
+            linux_system_codename: xenial
+        openstack_telemetry_node02:
+          params:
+            linux_system_codename: xenial
+        openstack_telemetry_node03:
+          params:
+            linux_system_codename: xenial
+        openstack_message_queue_node01:
+          params:
+            linux_system_codename: xenial
+        openstack_message_queue_node02:
+          params:
+            linux_system_codename: xenial
+        openstack_message_queue_node03:
+          params:
+            linux_system_codename: xenial
+        openstack_proxy_node01:
+          params:
+            linux_system_codename: xenial
+        openstack_proxy_node02:
+          params:
+            linux_system_codename: xenial
+        openstack_compute_rack01:
+          name: ${_param:openstack_compute_rack01_hostname}<<count>>
+          domain: ${_param:cluster_domain}
+          classes:
+        {%- if cookiecutter.get('openstack_nfv_sriov_enabled', 'False') == 'True' %}
+          - cluster.${_param:cluster_name}.openstack.compute.sriov
+        {%- endif %}
+        {%- if cookiecutter.get('openstack_nfv_dpdk_enabled', 'False') == 'True' %}
+          - cluster.${_param:cluster_name}.openstack.compute.dpdk
+        {%- endif %}
+        {%- if not cookiecutter.get('openstack_nfv_dpdk_enabled', 'False') == 'True' and not cookiecutter.get('openstack_nfv_sriov_enabled', 'False') == 'True' %}
+          - cluster.${_param:cluster_name}.openstack.compute
+        {%- endif %}
+          repeat:
+            count: {{ cookiecutter.openstack_compute_count }}
+            start: 1
+            digits: 3
+            params:
+              single_address:
+                value: ${_param:openstack_compute_rack01_single_subnet}.<<count>>
+                start: 101
+              tenant_address:
+                value: ${_param:openstack_compute_rack01_tenant_subnet}.<<count>>
+                start: 101
+          params:
+            salt_master_host: ${_param:reclass_config_master}
+          {%- if cookiecutter.get('openstack_nfv_dpdk_enabled', 'False') == 'True' and cookiecutter.openstack_network_engine == 'opencontrail' %}
+            linux_system_codename: trusty
+          {%- else %}
+            linux_system_codename: xenial
+          {%- endif %}
+        {%- if cookiecutter.get('openstack_nfv_sriov_enabled', 'False') == 'True' %}
+            # sriov_nic01_device_name: eth7
+            # sriov_nic01_numvfs: 7
+            # sriov_nic01_physical_network: physnet3
+            # sriov_unsafe_interrupts: False
+        {%- endif %}
+        {%- if cookiecutter.get('openstack_nfv_dpdk_enabled', 'False') == 'True' %}
+        {%- if cookiecutter.openstack_network_engine == 'opencontrail' %}
+            # compute_vrouter_dpdk_mac_address: 00:1b:21:87:21:99
+            # compute_vrouter_dpdk_pci: "'0000:05:00.1'"
+            # compute_vrouter_taskset: "-c 1,2"
+            # compute_vrouter_socket_mem: "1024"
+        {%- elif cookiecutter.openstack_network_engine == 'ovs' %}
+            # dpdk0_name: enp5s0f1
+            # dpdk1_name: enp5s0f2
+            # dpdk0_pci: '"0000:05:00.1"'
+            # dpdk1_pci: '"0000:05:00.2"'
+            # compute_dpdk_driver: uio
+            # compute_ovs_pmd_cpu_mask: "0x6"
+            # compute_ovs_dpdk_socket_mem: "1024"
+            # compute_ovs_dpdk_lcore_mask: "0x400"
+            # compute_ovs_memory_channels: "2"
+        {%- endif %}
+        {%- endif %}
+        {%- endif %}

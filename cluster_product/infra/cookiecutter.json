@@ -1,0 +1,57 @@
+{
+    "cluster_name"                              : "deployment_name",
+    "cluster_domain"                            : "deploy-name.local",
+    "public_host"                               : "${_param:openstack_proxy_address}",
+    "reclass_repository"                        : "https://github.com/Mirantis/mk-lab-salt-model.git",
+
+    "local_repositories"                        : "False",
+    "local_repo_url"                            : "${_param:cicd_control_address}",
+    "deployment_type"                           : "physical",
+    "deploy_network_netmask"                    : "255.255.255.0",
+    "deploy_network_gateway"                    : "",
+    "control_network_netmask"                   : "255.255.255.0",
+    "dns_server01"                              : "8.8.8.8",
+    "dns_server02"                              : "8.8.4.4",
+    "control_vlan"                              : "10",
+    "tenant_vlan"                               : "20",
+    "tenant_network_netmask"                    : "255.255.255.0",
+    "tenant_network_gateway"                    : "",
+
+    "infra_deploy_nic"                          : "eth0",
+    "infra_primary_first_nic"                   : "eth1",
+    "infra_primary_second_nic"                  : "eth2",
+
+    "salt_master_address"                       : "10.167.4.90",
+    "salt_master_management_address"            : "10.167.5.90",
+    "salt_master_hostname"                      : "cfg01",
+    "salt_api_password_hash"                    : "<<WILL_BE_GENERATED>>",
+
+    "maas_deploy_address"                       : "10.167.4.91",
+    "maas_hostname"                             : "mas01",
+
+    "infra_kvm_vip_address"                     : "10.167.4.240",
+    "infra_kvm01_control_address"               : "10.167.4.241",
+    "infra_kvm02_control_address"               : "10.167.4.242",
+    "infra_kvm03_control_address"               : "10.167.4.243",
+    "infra_kvm01_deploy_address"                : "10.167.5.241",
+    "infra_kvm02_deploy_address"                : "10.167.5.242",
+    "infra_kvm03_deploy_address"                : "10.167.5.243",
+    "infra_kvm01_hostname"                      : "kvm01",
+    "infra_kvm02_hostname"                      : "kvm02",
+    "infra_kvm03_hostname"                      : "kvm03",
+
+    "infra_bond_mode"                           : "active-backup",
+
+    "openstack_network_engine"                  : "opencontrail",
+    "openstack_enabled"                         : "True",
+    "opencontrail_enabled"                      : "True",
+    "stacklight_enabled"                        : "True",
+    "stacklight_version"                        : "1",
+    "cicd_enabled"                              : "True",
+    "kubernetes_enabled"                        : "False",
+    "kubernetes_network_engine"                 : "calico",
+    "openstack_nfv_dpdk_enabled"                : "False",
+    "openstack_nfv_sriov_enabled"               : "False",
+
+    "openstack_compute_count"                   : "100"
+}
